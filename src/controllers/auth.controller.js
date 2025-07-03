@@ -34,8 +34,11 @@ const login = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: 'Invalid credentials' })
 
-    const token = signToken({ id: user.id })
-    res.json({ token })
+    const accessToken = signToken({ id: user.id })
+    res.json({
+      accessToken: accessToken,
+      refreshToken: ''
+    })
   } catch (error) {
     res.status(500).json({ message: 'Server error', error })
   }
