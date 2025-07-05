@@ -1,10 +1,10 @@
 const db = require('../config/database')
 
-const getAllCategories = async ({ page = 1, limit = 10, search = '' }) => {
+const getAllBands = async ({ page = 1, limit = 10, search = '' }) => {
   const offset = (page - 1) * limit
   const queryParams = []
-  let query = 'SELECT * FROM categories'
-  let countQuery = 'SELECT COUNT(*) FROM categories'
+  let query = 'SELECT * FROM brands'
+  let countQuery = 'SELECT COUNT(*) FROM brands'
   let conditions = []
 
   // Tìm kiếm theo tên (search)
@@ -44,28 +44,28 @@ const getAllCategories = async ({ page = 1, limit = 10, search = '' }) => {
   }
 }
 
-const getCategoryById = async id => {
-  const result = await db.query('SELECT * FROM categories WHERE id = $1', [id])
+const getBrandById = async id => {
+  const result = await db.query('SELECT * FROM brands WHERE id = $1', [id])
   return result.rows[0]
 }
 
-const createCategory = async ({ name, image, description }) => {
+const createBrand = async ({ name, image }) => {
   const result = await db.query(
-    'INSERT INTO categories(name, image, description) VALUES($1, $2, $3) RETURNING *',
-    [name, image, description]
+    'INSERT INTO brands(name, image) VALUES($1, $2) RETURNING *',
+    [name, image]
   )
   return result.rows[0]
 }
 
-const updateCategory = async (id, { name, image, description }) => {
-  const fields = ['name', 'description']
-  const values = [name, description]
-  let query = 'UPDATE categories SET name = $1, description = $2'
+const updateBrand = async (id, { name, image }) => {
+  const fields = ['name']
+  const values = [name]
+  let query = 'UPDATE brands SET name = $1'
 
   if (image !== undefined && image !== null && image !== '') {
     fields.push('image')
     values.push(image)
-    query = 'UPDATE categories SET name = $1, description = $2, image = $3'
+    query = 'UPDATE brands SET name = $1, image = $2'
   }
 
   query += ` WHERE id = $${fields.length + 1} RETURNING *`
@@ -75,14 +75,14 @@ const updateCategory = async (id, { name, image, description }) => {
   return result.rows[0]
 }
 
-const deleteCategory = async id => {
-  await db.query('DELETE FROM categories WHERE id = $1', [id])
+const deleteBrand = async id => {
+  await db.query('DELETE FROM brands WHERE id = $1', [id])
 }
 
 module.exports = {
-  getAllCategories,
-  getCategoryById,
-  createCategory,
-  updateCategory,
-  deleteCategory
+  getAllBands,
+  getBrandById,
+  createBrand,
+  updateBrand,
+  deleteBrand
 }

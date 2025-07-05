@@ -3,8 +3,19 @@ const blogModel = require('../models/blog.model')
 const userModel = require('../models/user.model')
 
 const getAll = async (req, res) => {
-  const news = await blogModel.getAllBLog()
-  res.json(news)
+  try {
+    const { page = 1, limit = 10, search = '', category_id } = req.query
+
+    const result = await blogModel.getAllBLog({
+      page,
+      limit,
+      search,
+      category_id
+    })
+    res.json(result)
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error })
+  }
 }
 
 const getById = async (req, res) => {
@@ -22,10 +33,17 @@ const create = async (req, res) => {
       return res.status(403).json({ message: MESSAGES.UNAUTHORIZED })
     }
 
-    const { title, description } = req.body
-    const thumbnail = req.file ? `/uploads/${req.file.filename}` : null
+    const { title, description, short_description, blog_category_id } = req.body
+    const image = req.file ? `/uploads/${req.file.filename}` : null
 
-    const blog = await blogModel.createBlog({ title, description, thumbnail })
+    const blog = await blogModel.createBLog({
+      title,
+      description,
+      short_description,
+      blog_category_id,
+      image,
+      user_id: req.user.id
+    })
     res.status(201).json(blog)
   } catch (err) {
     res.status(500).json({ message: 'Lỗi tạo blog', error: err.message })
@@ -36,19 +54,22 @@ const update = async (req, res) => {
   try {
     const profile = await userModel.findUserById(req.user.id)
     const allowedRoles = [ROLES.ADMIN, ROLES.WRITTER]
-
+    console.log("req.user.id",req.user.id);
+    
     if (!allowedRoles.includes(profile.role_name)) {
       return res.status(403).json({ message: MESSAGES.UNAUTHORIZED })
     }
 
-    const { title, description } = req.body
-    const thumbnail = req.file
+    const { title, description, short_description, blog_category_id } = req.body
+    const image = req.file
       ? `/uploads/${req.file.filename}`
-      : req.body.thumbnail || null
+      : req.body.image || null
     const blog = await blogModel.updateBLog(req.params.id, {
       title,
       description,
-      thumbnail
+      short_description,
+      blog_category_id,
+      image
     })
     res.status(201).json(blog)
   } catch (err) {

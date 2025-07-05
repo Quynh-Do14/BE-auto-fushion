@@ -5,6 +5,7 @@ const getAllProducts = async ({
   limit = 10,
   search = '',
   category_id,
+  brand_id,
   min_price,
   max_price
 }) => {
@@ -14,6 +15,7 @@ const getAllProducts = async ({
     SELECT p.*, c.name AS category_name
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN brands b ON p.brand_id = b.id
   `
   let countQuery = `SELECT COUNT(*) FROM products p`
   const conditions = []
@@ -26,6 +28,11 @@ const getAllProducts = async ({
   if (category_id) {
     queryParams.push(category_id)
     conditions.push(`p.category_id = $${queryParams.length}`)
+  }
+
+  if (brand_id) {
+    queryParams.push(brand_id)
+    conditions.push(`p.brand_id = $${queryParams.length}`)
   }
 
   if (min_price) {
@@ -95,13 +102,30 @@ const getProductById = async id => {
 }
 
 const createProduct = async (data, imageUrls = []) => {
-  const { name, description, price, sale_price, year, warranty, category_id } =
-    data
+  const {
+    name,
+    description,
+    price,
+    sale_price,
+    year,
+    warranty,
+    category_id,
+    brand_id
+  } = data
   const result = await db.query(
     `
-    INSERT INTO products(name, description, price, sale_price, year, warranty, category_id)
+    INSERT INTO products(name, description, price, sale_price, year, warranty, category_id, brand_id)
     VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-    [name, description, price, sale_price, year, warranty, category_id]
+    [
+      name,
+      description,
+      price,
+      sale_price,
+      year,
+      warranty,
+      category_id,
+      brand_id
+    ]
   )
   const product = result.rows[0]
 
@@ -116,15 +140,33 @@ const createProduct = async (data, imageUrls = []) => {
 }
 
 const updateProduct = async (id, data, imageUrls = []) => {
-  const { name, description, price, sale_price, year, warranty, category_id } =
-    data
+  const {
+    name,
+    description,
+    price,
+    sale_price,
+    year,
+    warranty,
+    category_id,
+    brand_id
+  } = data
 
   const result = await db.query(
     `
     UPDATE products SET name=$1, description=$2, price=$3, sale_price=$4,
-      year=$5, warranty=$6, category_id=$7
-    WHERE id=$8 RETURNING *`,
-    [name, description, price, sale_price, year, warranty, category_id, id]
+      year=$5, warranty=$6, category_id=$7, brand_id=$8
+    WHERE id=$9 RETURNING *`,
+    [
+      name,
+      description,
+      price,
+      sale_price,
+      year,
+      warranty,
+      category_id,
+      brand_id,
+      id
+    ]
   )
 
   if (imageUrls.length > 0) {

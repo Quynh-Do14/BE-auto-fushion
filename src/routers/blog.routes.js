@@ -8,13 +8,13 @@ router.get('/', blogController.getAll)
 router.get('/:id', blogController.getById)
 router.post(
   '/',
-  upload.single('thumbnail'),
+  upload.single('image'),
   authenticate,
   blogController.create
 )
 router.put(
   '/:id',
-  upload.single('thumbnail'),
+  upload.single('image'),
   authenticate,
   blogController.update
 )

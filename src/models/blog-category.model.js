@@ -3,8 +3,8 @@ const db = require('../config/database')
 const getAllCategories = async ({ page = 1, limit = 10, search = '' }) => {
   const offset = (page - 1) * limit
   const queryParams = []
-  let query = 'SELECT * FROM categories'
-  let countQuery = 'SELECT COUNT(*) FROM categories'
+  let query = 'SELECT * FROM blog_categories'
+  let countQuery = 'SELECT COUNT(*) FROM blog_categories'
   let conditions = []
 
   // Tìm kiếm theo tên (search)
@@ -45,38 +45,30 @@ const getAllCategories = async ({ page = 1, limit = 10, search = '' }) => {
 }
 
 const getCategoryById = async id => {
-  const result = await db.query('SELECT * FROM categories WHERE id = $1', [id])
+  const result = await db.query('SELECT * FROM blog_categories WHERE id = $1', [
+    id
+  ])
   return result.rows[0]
 }
 
-const createCategory = async ({ name, image, description }) => {
+const createCategory = async name => {
   const result = await db.query(
-    'INSERT INTO categories(name, image, description) VALUES($1, $2, $3) RETURNING *',
-    [name, image, description]
+    'INSERT INTO blog_categories(name) VALUES($1) RETURNING *',
+    [name]
   )
   return result.rows[0]
 }
 
-const updateCategory = async (id, { name, image, description }) => {
-  const fields = ['name', 'description']
-  const values = [name, description]
-  let query = 'UPDATE categories SET name = $1, description = $2'
-
-  if (image !== undefined && image !== null && image !== '') {
-    fields.push('image')
-    values.push(image)
-    query = 'UPDATE categories SET name = $1, description = $2, image = $3'
-  }
-
-  query += ` WHERE id = $${fields.length + 1} RETURNING *`
-  values.push(id)
-
-  const result = await db.query(query, values)
+const updateCategory = async (id, name) => {
+  const result = await db.query(
+    'UPDATE blog_categories SET name = $1 WHERE id = $2 RETURNING *',
+    [name, id]
+  )
   return result.rows[0]
 }
 
 const deleteCategory = async id => {
-  await db.query('DELETE FROM categories WHERE id = $1', [id])
+  await db.query('DELETE FROM blog_categories WHERE id = $1', [id])
 }
 
 module.exports = {

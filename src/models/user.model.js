@@ -1,22 +1,68 @@
 const db = require('../config/database')
 
-const getAllUsers = async () => {
-  const result = await db.query(
-    `
-    SELECT u.id, u.name, u.email, u.role_id, r.name AS role_name, u.created_at
-    FROM users u
+const getAllUsers = async ({ search = '', limit = 10, page = 1 }) => {
+  const offset = (page - 1) * limit
+  const queryParams = []
+  const conditions = []
+
+  let baseQuery = `
+    SELECT u.id, u.name, u.email, u.role_id, r.name AS role_name, u.created_at 
+    FROM users u 
     LEFT JOIN roles r ON u.role_id = r.id
-    ORDER BY u.created_at DESC
-    `
+  `
+
+  let countQuery = `
+    SELECT COUNT(*) 
+    FROM users u 
+    LEFT JOIN roles r ON u.role_id = r.id
+  `
+
+  // Thêm điều kiện tìm kiếm
+  if (search) {
+    queryParams.push(`%${search}%`)
+    conditions.push(`LOWER(u.name) LIKE LOWER($${queryParams.length})`)
+  }
+
+  // Gắn điều kiện WHERE nếu có
+  if (conditions.length > 0) {
+    const whereClause = `WHERE ${conditions.join(' AND ')}`
+    baseQuery += ` ${whereClause}`
+    countQuery += ` ${whereClause}`
+  }
+
+  // Thêm phân trang
+  queryParams.push(limit)
+  queryParams.push(offset)
+  baseQuery += ` ORDER BY u.id DESC LIMIT $${queryParams.length - 1} OFFSET $${
+    queryParams.length
+  }`
+
+  // Thực hiện truy vấn
+  const dataResult = await db.query(baseQuery, queryParams)
+  const countResult = await db.query(
+    countQuery,
+    queryParams.slice(0, queryParams.length - 2)
   )
-  return result.rows
+  const total = parseInt(countResult.rows[0]?.count || '0')
+
+  return {
+    data: dataResult.rows,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit)
+  }
 }
 
-const createUser = async ({ name, email, password }) => {
-  const result = await db.query(
-    'INSERT INTO users(name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
-    [name, email, password]
-  )
+const createUser = async ({ name, email, password, role_id }) => {
+  const query = `
+    INSERT INTO users (name, email, password, role_id)
+    VALUES ($1, $2, $3, $4)
+    RETURNING id, name, email, role_id
+  `
+  const values = [name, email, password, role_id]
+
+  const result = await db.query(query, values)
   return result.rows[0]
 }
 
