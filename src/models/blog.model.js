@@ -10,16 +10,17 @@ const getAllBLog = async ({
   const queryParams = []
 
   let query = `
-    SELECT b.*, c.name AS category_name, u.name AS user_name
+    SELECT b.*, bc.name AS category_name, u.name AS user_name
     FROM blog b
-    LEFT JOIN blog_categories c ON b.blog_category_id = c.id
+    LEFT JOIN blog_categories bc ON b.blog_category_id = bc.id
     LEFT JOIN users u ON b.user_id = u.id
   `
 
   let countQuery = `
     SELECT COUNT(*) 
-    FROM blog b 
-    LEFT JOIN blog_categories c ON b.blog_category_id = c.id
+    FROM blog b
+    LEFT JOIN blog_categories bc ON b.blog_category_id = bc.id
+    LEFT JOIN users u ON b.user_id = u.id
   `
   let conditions = []
 
@@ -70,9 +71,9 @@ const getBLogById = async id => {
   // Lấy bài viết hiện tại
   const blogResult = await db.query(
     `
-    SELECT b.*, c.name AS category_name, u.name AS user_name
+    SELECT b.*, bc.name AS category_name, u.name AS user_name
     FROM blog b
-    LEFT JOIN blog_categories c ON b.blog_category_id = c.id
+    LEFT JOIN blog_categories bc ON b.blog_category_id = bc.id
     LEFT JOIN users u ON b.user_id = u.id
     WHERE b.id = $1
     `,

@@ -31,13 +31,33 @@ const create = async (req, res) => {
     const profile = await userModel.findUserById(req.user.id)
     const allowedRoles = [ROLES.ADMIN, ROLES.SELLER]
 
-    if (!allowedRoles.includes(profile.role_name))
+    if (!allowedRoles.includes(profile.role_name)) {
       return res.status(403).json({ message: MESSAGES.UNAUTHORIZED })
+    }
 
-    const imageUrls = req.files?.map(file => `/uploads/${file.filename}`) || []
-    const product = await productModel.createProduct(req.body, imageUrls)
+    // ✅ Lấy ảnh chính (image)
+    const image = req.files?.image?.[0]
+      ? `/uploads/${req.files.image[0].filename}`
+      : null
+
+    // ✅ Lấy danh sách ảnh phụ (images)
+    const imageUrls =
+      req.files?.images?.map(file => `/uploads/${file.filename}`) || []
+
+    // ✅ Parse productFigure từ body
+    const productFigure = JSON.parse(req.body.productFigure || '[]')
+
+    // ✅ Tạo sản phẩm
+    const product = await productModel.createProduct(
+      req.body,
+      imageUrls,
+      productFigure,
+      image // 👈 Truyền thêm ảnh chính
+    )
+
     res.status(201).json(product)
   } catch (err) {
+    console.error(err)
     res
       .status(500)
       .json({ message: 'Tạo sản phẩm thất bại', error: err.message })
@@ -52,16 +72,30 @@ const update = async (req, res) => {
     if (!allowedRoles.includes(profile.role_name))
       return res.status(403).json({ message: MESSAGES.UNAUTHORIZED })
 
-    const imageUrls = req.files?.map(file => `/uploads/${file.filename}`) || []
-    console.log('imageUrls', imageUrls)
+    const newImageUrls =
+      req.files?.images?.map(file => `/uploads/${file.filename}`) || []
+
+    const remainingImages = JSON.parse(req.body.remainingImages || '[]')
+
+    const productFigure = JSON.parse(req.body.productFigure || '[]')
+
+    // Ảnh chính (image: chỉ lấy phần tử đầu tiên nếu tồn tại)
+    const singleImage = req.files?.image?.[0]
+      ? `/uploads/${req.files.image[0].filename}`
+      : null
 
     const product = await productModel.updateProduct(
       req.params.id,
       req.body,
-      imageUrls
+      newImageUrls,
+      remainingImages,
+      productFigure,
+      singleImage // 👉 truyền thêm vào
     )
+
     if (!product)
       return res.status(404).json({ message: 'Không tìm thấy sản phẩm' })
+
     res.json(product)
   } catch (err) {
     res.status(500).json({ message: 'Cập nhật thất bại', error: err.message })
