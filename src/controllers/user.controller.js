@@ -122,14 +122,23 @@ const remove = async (req, res) => {
 
 const getProfile = async (req, res) => {
   try {
-    const user = await userModel.findUserById(req.user.id)
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized' })
+    }
 
-    if (!user) return res.status(404).json({ message: 'User not found' })
-    res.json(user)
+    const profile = await userModel.findUserById(req.user.id)
+
+    if (!profile) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    res.json(profile)
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error })
+    console.error(error)
+    res.status(500).json({ message: 'Server error' })
   }
 }
+
 
 module.exports = {
   getAll,

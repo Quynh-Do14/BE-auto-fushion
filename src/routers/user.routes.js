@@ -8,6 +8,6 @@ router.get('/:id', authenticate, userController.getById)
 router.post('/', authenticate, userController.create)
 router.put('/:id', authenticate, userController.update)
 router.delete('/:id', authenticate, userController.remove)
-router.get('/profile', authenticate, userController.getProfile)
+router.get('/me/profile', authenticate, userController.getProfile)
 
 module.exports = router
