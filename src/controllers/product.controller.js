@@ -4,12 +4,14 @@ const userModel = require('../models/user.model')
 
 const getAll = async (req, res) => {
   try {
-    const { page, limit, search, category_id, min_price, max_price } = req.query
+    const { page, limit, search, category_id, brand_id, min_price, max_price } =
+      req.query
     const result = await productModel.getAllProducts({
       page,
       limit,
       search,
       category_id,
+      brand_id,
       min_price,
       max_price
     })
