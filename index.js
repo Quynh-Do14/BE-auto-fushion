@@ -15,6 +15,7 @@ const productRoutes = require('./src/routers/product.routes')
 const blogRoutes = require('./src/routers/blog.routes')
 const brandRoutes = require('./src/routers/brand.routes')
 const blogCategoryRoutes = require('./src/routers/blog-category.routes')
+const bannerRoutes = require('./src/routers/banner.routes')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -31,6 +32,7 @@ app.use('/api/product', productRoutes)
 app.use('/api/blog', blogRoutes)
 app.use('/api/brand', brandRoutes)
 app.use('/api/blog-category', blogCategoryRoutes)
+app.use('/api/banner', bannerRoutes)
 
 app.use('/api/uploads', express.static('src/uploads'))
 // Health check
