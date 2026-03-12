@@ -270,9 +270,6 @@ const updateProduct = async (
       [id, url]
     )
   }
-  console.log('oldImages', oldImages)
-  console.log('imagesToDelete', imagesToDelete)
-  console.log('remainingImages', remainingImages)
 
   for (const url of newImageUrls) {
     await db.query(

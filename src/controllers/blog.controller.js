@@ -54,7 +54,6 @@ const update = async (req, res) => {
   try {
     const profile = await userModel.findUserById(req.user.id)
     const allowedRoles = [ROLES.ADMIN, ROLES.WRITTER]
-    console.log("req.user.id",req.user.id);
     
     if (!allowedRoles.includes(profile.role_name)) {
       return res.status(403).json({ message: MESSAGES.UNAUTHORIZED })
