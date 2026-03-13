@@ -221,16 +221,17 @@ const updateProduct = async (
 
   let updateQuery = `
     UPDATE products SET 
-      name=$1, 
-      description=$2, 
-      short_description=$3, 
-      more_infomation=$4, 
-      price=$5, 
-      percent_sale=$6,
-      year=$7, 
-      warranty=$8, 
-      category_id=$9, 
-      brand_id=$10`
+      name = $1, 
+      description = $2, 
+      short_description = $3, 
+      more_infomation = $4, 
+      price = $5, 
+      percent_sale = $6,
+      year = $7, 
+      warranty = $8, 
+      category_id = $9, 
+      brand_id = $10`
+
   const params = [
     name,
     description,
@@ -244,15 +245,15 @@ const updateProduct = async (
     brand_id
   ]
 
+  // Thêm image nếu có
   if (image) {
-    updateQuery += `, image=$11`
+    updateQuery += `, image = $11`
     params.push(image)
-    updateQuery += ` WHERE id=$12 RETURNING *`
-    params.push(id)
-  } else {
-    updateQuery += ` WHERE id=$11 RETURNING *`
-    params.push(id)
   }
+
+  // Thêm điều kiện WHERE
+  updateQuery += ` WHERE id = $${params.length + 1} RETURNING *`
+  params.push(id)
 
   const result = await db.query(updateQuery, params)
 
